@@ -12,7 +12,7 @@ import {AddPlacePopup} from "./AddPlacePopup";
 import Register from "./Register";
 import Login from "./Login";
 import InfoTooltip from "./InfoTooltip"
-import {getContentAuth} from "./Auth"
+import {getContentAuth, loginAuth, registerAuth} from "../utils/Auth"
 
 function App() {
   const [isEditProfilePopupOpen, setIsEditProfilePopupOpen] = useState(false);
@@ -25,6 +25,7 @@ function App() {
   const navigate = useNavigate();
   const [infoTooltipSuccess, setInfoTooltipSuccess] = useState(true);
   const [openInfoTooltip, setOpenInfoTooltip] = useState(false);
+
   const [data, setData] = useState({
       email: '',
       id: ''
@@ -32,7 +33,7 @@ function App() {
 
   useEffect(()=> {
       if(loggedIn) {
-          navigate('/main')
+          navigate('/')
       }
       else {
           navigate('/sign-in')
@@ -41,23 +42,59 @@ function App() {
   useEffect(()=> {
       const apiGetInitialCards = api.getInitialCards();
       const apiGetUserInfo = api.getUserInfo();
-      Promise.all([apiGetInitialCards, apiGetUserInfo])
-          .then(([cards, userInfo]) => {
-              setCards(
-                  cards.map((item) => ({
-                      ...item,
-                      ownerId: item.owner._id,
-                  }))
-              );
-              setCurrentUser(userInfo);
+      if (loggedIn) {
+          Promise.all([apiGetInitialCards, apiGetUserInfo])
+              .then(([cards, userInfo]) => {
+                  setCards(
+                      cards.map((item) => ({
+                          ...item,
+                          ownerId: item.owner._id,
+                      }))
+                  );
+                  setCurrentUser(userInfo);
+              })
+              .catch(err => {
+                  console.log(err);
+              });
+      }
+  },[loggedIn]);
+  useEffect(()=> {
+      tokenCheck();
+  }, []);
+
+  const handelLogin = (email, password ) => {
+      loginAuth(email, password)
+          .then((res) => {
+              if(res){
+                  localStorage.setItem('jwt', res.token);
+                  setData({
+                      email: email,
+                      id: ''
+                  })
+                  navigate('../', setLoggedIn(true));
+              } else {
+                  setInfoTooltipSuccess(false);
+                  setOpenInfoTooltip(true);
+              }
           })
           .catch(err => {
               console.log(err);
           });
-  },[]);
-  useEffect(()=> {
-      tokenCheck();
-  }, [])
+  }
+  const handelRegister = (login, password) => {
+      registerAuth(login, password)
+          .then((res) => {
+              if(res.data){
+                  navigate('../sign-in', setInfoTooltipSuccess(true));
+                  setOpenInfoTooltip(true);
+              }
+          })
+          .catch(err => {
+              setInfoTooltipSuccess(false);
+              setOpenInfoTooltip(true);
+              console.log(err);
+          });
+  }
 
   const handleEditAvatarClick = () => {
     setIsEditAvatarPopupOpen(true);
@@ -87,11 +124,9 @@ function App() {
                       email: res.data.email,
                       id: res.data._id
                   });
-                  navigate('../main', setLoggedIn(true));
+                  navigate('../', setLoggedIn(true));
               })
-              .catch(err => {
-                  console.log(err);
-              });
+              .catch((err) => console.log(err));
       }
   }
 
@@ -160,18 +195,18 @@ function App() {
           <div className="page">
             <Routes>
               <Route
-                path="/main"
+                path="/"
                 element={<Main data={data} onEditProfile={handleEditProfileClick} onAddPlace={handleAddPlaceClick} onEditAvatar={handleEditAvatarClick} onCardClick={handleCardClick}
                       cards={cards} handleCardLike={handleCardLike} handleCardDelete={handleCardDelete} /> }/>
               <Route
                 path="/sign-up"
-                element={<Register infoTooltipSuccess={setInfoTooltipSuccess} openInfoTooltip={setOpenInfoTooltip} navigate={navigate}/>} />
+                element={<Register handelRegister={handelRegister}/>} />
               <Route
                 path="/sign-in"
-                element={<Login data={setData} loggedIn={setLoggedIn} infoTooltipSuccess={setInfoTooltipSuccess} openInfoTooltip={setOpenInfoTooltip} navigate={navigate} />} />
+                element={<Login handelLogin={handelLogin}/>} />
               <Route
                 path="*"
-                element={loggedIn ? <Navigate to='/main'/> : <Navigate to='/sign-in'/>} />
+                element={loggedIn ? <Navigate to='/'/> : <Navigate to='/sign-in'/>} />
             </Routes>
 
             <EditProfilePopup isOpen={isEditProfilePopupOpen} onClose={closeAllPopups} onUpdateUser={handleUpdateUser} />

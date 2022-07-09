@@ -1,8 +1,6 @@
 import React, {useState} from 'react';
 import Header from "./Header";
 import {NavLink} from "react-router-dom";
-import {registerAuth} from "./Auth";
-
 
 function Register(props) {
     const [data, setData] = useState({
@@ -20,21 +18,7 @@ function Register(props) {
 
     const handleSubmit = (e) => {
         e.preventDefault()
-        registerAuth(data.login, data.password)
-            .then((res) => {
-                if(res.data){
-                    ;
-                    props.navigate('../sign-in', props.infoTooltipSuccess(true));
-                } else {
-                    props.infoTooltipSuccess(false);
-                }
-            })
-            .then(() => {
-                props.openInfoTooltip(true);
-            })
-             .catch(err => {
-                 console.log(err);
-             });
+        props.handelRegister(data.login, data.password);
     }
 
     return(

@@ -1,5 +1,4 @@
 import Header from "./Header";
-import {loginAuth} from "./Auth";
 import React, {useState} from 'react';
 
 function Login(props) {
@@ -8,7 +7,6 @@ function Login(props) {
         login__email: '',
         login__password: ''
     })
-
     const handleChange = (e) => {
         const {name, value} = e.target;
         setData((oldData) => ({
@@ -16,26 +14,9 @@ function Login(props) {
             [name]:value
         }))
     }
-
     const handleSubmit = (e) => {
         e.preventDefault()
-        loginAuth(data.login__email, data.login__password)
-            .then((res) => {
-                if(res){
-                    localStorage.setItem('jwt', res.token);
-                    props.data({
-                        email: data.login__email,
-                        id: ''
-                    })
-                    props.navigate('../main', props.loggedIn(true));
-                } else {
-                    props.infoTooltipSuccess(false);
-                    props.openInfoTooltip(true);
-                }
-            })
-            .catch(err => {
-                console.log(err);
-            });
+        props.handelLogin(data.login__email, data.login__password);
     }
 
     return(
