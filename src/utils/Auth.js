@@ -17,7 +17,6 @@ export const registerAuth = (login, password) => {
         })
     })
         .then(checkResponse)
-        .catch((err) => console.log(err));
 };
 
 export const loginAuth = (login, password) => {
@@ -33,7 +32,6 @@ export const loginAuth = (login, password) => {
         })
     })
         .then(checkResponse)
-        .catch((err) => console.log(err));
 };
 
 export const getContentAuth = (token) => {
