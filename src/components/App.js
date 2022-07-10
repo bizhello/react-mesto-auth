@@ -72,12 +72,11 @@ function App() {
                       id: ''
                   })
                   navigate('../', setLoggedIn(true));
-              } else {
-                  setInfoTooltipSuccess(false);
-                  setOpenInfoTooltip(true);
               }
           })
           .catch(err => {
+              setInfoTooltipSuccess(false);
+              setOpenInfoTooltip(true);
               console.log(err);
           });
   }
